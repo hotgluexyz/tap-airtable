@@ -8,6 +8,9 @@ from airtable.client import Client
 from singer.catalog import Catalog, CatalogEntry, Schema
 from tap_airtable.airtable_utils import JsonUtils, Relations
 
+class RetriableException(Exception):
+    pass
+
 class Airtable(object):
     with open('./config.json', 'r') as f:
         config = json.load(f)
@@ -50,6 +53,7 @@ class Airtable(object):
         """Validate HTTP response."""
         if response.status_code == 401:
             self._refresh_token()
+            raise RetriableException(f"Unauthorized, {response.text}")
         
         if response.status_code == 429:
             raise Exception(f"Too Many Requests for path: {response.request.url}")
@@ -74,7 +78,7 @@ class Airtable(object):
 
         return response
     
-    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=5)
+    @backoff.on_exception(backoff.expo, (requests.exceptions.RequestException, RetriableException), max_tries=5)
     def _request(self, method, url, params=None, headers={}, data={}, *args, **kwargs):
         new_headers = {'Authorization': 'Bearer {}'.format(self.config['access_token'])}
         headers.update(new_headers)
