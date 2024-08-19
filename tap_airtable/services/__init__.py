@@ -7,6 +7,8 @@ import requests
 from airtable.client import Client
 from singer.catalog import Catalog, CatalogEntry, Schema
 from tap_airtable.airtable_utils import JsonUtils, Relations
+from time import sleep
+LOGGER = singer.get_logger()
 
 class RetriableException(Exception):
     pass
@@ -56,7 +58,9 @@ class Airtable(object):
             raise RetriableException(f"Unauthorized, {response.text}")
         
         if response.status_code == 429:
-            raise Exception(f"Too Many Requests for path: {response.request.url}")
+            LOGGER.info(f"Status code {response.status_code} with response {response.text} and headers {response.headers}")
+            sleep(30) #according to their docs after surpassing the rate limit API will return 429 for the nex 30 seconds
+            raise RetriableException(f"Too Many Requests for path: {response.request.url}, with response {response.text}")
         
         if response.status_code == 404:
             pass
