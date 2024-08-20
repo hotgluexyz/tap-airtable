@@ -96,6 +96,7 @@ class Airtable(object):
         for table in response.json()["tables"]:
 
             columns = {}
+            original_table_name = table["name"]
             table_name = table["name"].replace('/', '')
             table_name = table_name.replace(' ', '')
             table_name = table_name.replace('{', '')
@@ -132,7 +133,7 @@ class Airtable(object):
             schema = Schema.from_dict(base)
 
             entry = CatalogEntry(
-                table=table_name,
+                table=original_table_name,
                 stream=table_name,
                 schema=schema,
                 metadata=metadata)
@@ -152,15 +153,13 @@ class Airtable(object):
         airtable_instance = Airtable()
 
         for stream in streams:
-            table = stream['table_name'].replace('/', '')
-            table = table.replace(' ', '')
-            table = table.replace('{', '')
-            table = table.replace('}', '')
+            original_table_name = stream['table_name']
+            table = stream['stream']
             schema = stream['schema']
             metadata = stream['metadata']
 
             if table != 'relations' and cls.is_selected(metadata):
-                response = airtable_instance.get_response(config['base_id'], stream["table_name"])
+                response = airtable_instance.get_response(config['base_id'], original_table_name)
                 if response.json().get('records'):
                     records = JsonUtils.match_record_with_keys(schema,
                                                                response.json().get('records'),
