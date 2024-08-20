@@ -47,7 +47,9 @@ class Airtable(object):
             "refresh_token": self.refresh_token,
         })
         response = self.client.refresh_token(self.refresh_token)
+        LOGGER.info(f"Refreshed tokens. Response={response}")
         self.token, self.config["access_token"] = response["access_token"], response["access_token"]
+        self.config["refresh_token"] = response["refresh_token"]
         with open('./config.json', 'w') as f:
             json.dump(self.config, f, indent=4)
 
