@@ -96,7 +96,10 @@ class Airtable(object):
         for table in response.json()["tables"]:
 
             columns = {}
-            table_name = table["name"]
+            table_name = table["name"].replace('/', '')
+            table_name = table_name.replace(' ', '')
+            table_name = table_name.replace('{', '')
+            table_name = table_name.replace('}', '')
 
             # Create schema
             base = {
