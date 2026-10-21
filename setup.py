@@ -10,7 +10,6 @@ setup(name='tap-airtable',
       install_requires=[
           'airtable-python==0.1.1',
           'backoff==1.3.2',
-          'certifi==2018.11.29',
           'chardet==3.0.4',
           'idna==2.7',
           'jsonschema==2.6.0',
